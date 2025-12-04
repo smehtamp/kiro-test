@@ -1,3 +1,10 @@
+"""
+Events API - A serverless REST API for managing events.
+
+This module provides a FastAPI application with full CRUD operations for events,
+deployed on AWS Lambda with DynamoDB storage.
+"""
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
@@ -9,7 +16,7 @@ import uuid
 import os
 from enum import Enum
 
-app = FastAPI(title="Events API")
+app = FastAPI(title="Events API", description="REST API for managing events with DynamoDB storage")
 
 # CORS configuration
 app.add_middleware(
@@ -27,6 +34,7 @@ table_name = os.getenv('DYNAMODB_TABLE', 'events')
 table = dynamodb.Table(table_name)
 
 class EventStatus(str, Enum):
+    """Valid event status values."""
     DRAFT = "draft"
     PUBLISHED = "published"
     ACTIVE = "active"
@@ -34,6 +42,19 @@ class EventStatus(str, Enum):
     COMPLETED = "completed"
 
 class Event(BaseModel):
+    """
+    Event model for creating new events.
+    
+    Attributes:
+        eventId: Optional unique identifier. Auto-generated if not provided.
+        title: Event title (1-200 characters).
+        description: Event description (1-2000 characters).
+        date: Event date in ISO format (YYYY-MM-DD).
+        location: Event location (1-500 characters).
+        capacity: Maximum number of attendees (1-100000).
+        organizer: Event organizer name (1-200 characters).
+        status: Event status (draft, published, active, cancelled, completed).
+    """
     eventId: Optional[str] = None
     title: str = Field(..., min_length=1, max_length=200, description="Event title")
     description: str = Field(..., min_length=1, max_length=2000, description="Event description")
@@ -53,6 +74,11 @@ class Event(BaseModel):
             raise ValueError('Date must be in ISO format (YYYY-MM-DD)')
 
 class EventUpdate(BaseModel):
+    """
+    Event update model for partial updates.
+    
+    All fields are optional. Only provided fields will be updated.
+    """
     title: Optional[str] = Field(None, min_length=1, max_length=200)
     description: Optional[str] = Field(None, min_length=1, max_length=2000)
     date: Optional[str] = None
@@ -74,10 +100,28 @@ class EventUpdate(BaseModel):
 
 @app.get("/")
 def root():
+    """
+    API root endpoint.
+    
+    Returns:
+        dict: Welcome message with API name.
+    """
     return {"message": "Events API"}
 
 @app.post("/events", status_code=201)
 def create_event(event: Event):
+    """
+    Create a new event.
+    
+    Args:
+        event: Event object with all required fields.
+    
+    Returns:
+        dict: Created event with eventId.
+    
+    Raises:
+        HTTPException: 503 if DynamoDB table not found, 500 for other errors.
+    """
     # Use provided eventId or generate a new one
     event_id = event.eventId if event.eventId else str(uuid.uuid4())
     
@@ -106,6 +150,20 @@ def list_events(
     location: Optional[str] = None,
     organizer: Optional[str] = None
 ):
+    """
+    List all events with optional filtering.
+    
+    Args:
+        status: Filter by event status (case-insensitive).
+        location: Filter by location (partial match, case-insensitive).
+        organizer: Filter by organizer (partial match, case-insensitive).
+    
+    Returns:
+        dict: List of events and count.
+    
+    Raises:
+        HTTPException: 503 if DynamoDB table not found, 500 for other errors.
+    """
     try:
         response = table.scan()
         events = response.get('Items', [])
@@ -126,6 +184,18 @@ def list_events(
 
 @app.get("/events/{event_id}")
 def get_event(event_id: str):
+    """
+    Get a specific event by ID.
+    
+    Args:
+        event_id: Unique event identifier.
+    
+    Returns:
+        dict: Event details.
+    
+    Raises:
+        HTTPException: 400 if eventId invalid, 404 if not found, 503 if table not found.
+    """
     if not event_id or not event_id.strip():
         raise HTTPException(status_code=400, detail="Event ID is required")
     
@@ -143,6 +213,19 @@ def get_event(event_id: str):
 
 @app.put("/events/{event_id}")
 def update_event(event_id: str, event: EventUpdate):
+    """
+    Update an existing event.
+    
+    Args:
+        event_id: Unique event identifier.
+        event: EventUpdate object with fields to update.
+    
+    Returns:
+        dict: Updated event details.
+    
+    Raises:
+        HTTPException: 400 if no fields to update, 404 if not found, 503 if table not found.
+    """
     if not event_id or not event_id.strip():
         raise HTTPException(status_code=400, detail="Event ID is required")
     
@@ -189,6 +272,18 @@ def update_event(event_id: str, event: EventUpdate):
 
 @app.delete("/events/{event_id}")
 def delete_event(event_id: str):
+    """
+    Delete an event.
+    
+    Args:
+        event_id: Unique event identifier.
+    
+    Returns:
+        dict: Success message with deleted eventId.
+    
+    Raises:
+        HTTPException: 400 if eventId invalid, 404 if not found, 503 if table not found.
+    """
     if not event_id or not event_id.strip():
         raise HTTPException(status_code=400, detail="Event ID is required")
     

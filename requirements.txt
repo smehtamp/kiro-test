@@ -4,3 +4,4 @@ boto3==1.29.7
 pydantic==2.5.0
 python-dotenv==1.0.0
 mangum==0.17.0
+pdoc==14.1.0

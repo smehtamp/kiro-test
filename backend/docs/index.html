@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events API Documentation</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; line-height: 1.6; color: #333; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 20px; text-align: center; margin-bottom: 30px; border-radius: 8px; }
+        header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        header p { font-size: 1.2em; opacity: 0.9; }
+        .content { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { color: #667eea; margin-top: 30px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #667eea; }
+        h3 { color: #764ba2; margin-top: 25px; margin-bottom: 10px; }
+        h4 { color: #555; margin-top: 20px; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        table th, table td { padding: 12px; text-align: left; border: 1px solid #ddd; }
+        table th { background: #667eea; color: white; font-weight: 600; }
+        table tr:nth-child(even) { background: #f9f9f9; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 0.9em; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 20px; border-radius: 5px; overflow-x: auto; margin: 15px 0; }
+        pre code { background: none; padding: 0; color: #f8f8f2; }
+        .endpoint { background: #f8f9fa; padding: 20px; border-left: 4px solid #667eea; margin: 20px 0; border-radius: 4px; }
+        .method { display: inline-block; padding: 4px 12px; border-radius: 4px; font-weight: bold; margin-right: 10px; font-size: 0.9em; }
+        .method.get { background: #61affe; color: white; }
+        .method.post { background: #49cc90; color: white; }
+        .method.put { background: #fca130; color: white; }
+        .method.delete { background: #f93e3e; color: white; }
+        .status-code { display: inline-block; padding: 2px 8px; border-radius: 3px; font-family: monospace; font-size: 0.9em; margin: 2px; }
+        .status-200 { background: #d4edda; color: #155724; }
+        .status-201 { background: #d4edda; color: #155724; }
+        .status-400 { background: #fff3cd; color: #856404; }
+        .status-404 { background: #f8d7da; color: #721c24; }
+        .status-500 { background: #f8d7da; color: #721c24; }
+        .status-503 { background: #f8d7da; color: #721c24; }
+        .base-url { background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 15px 0; font-family: monospace; }
+        ul { margin-left: 20px; margin-top: 10px; }
+        li { margin: 5px 0; }
+        .note { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 15px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Events API Documentation</h1>
+            <p>A serverless REST API for managing events</p>
+        </header>
+
+        <div class="content">
+            <h2>Overview</h2>
+            <p>A serverless REST API built with FastAPI and deployed on AWS Lambda with DynamoDB storage. This API provides full CRUD operations for managing events with support for filtering and validation.</p>
+            
+            <div class="base-url">
+                <strong>Base URL:</strong> https://xbcqj9xw6e.execute-api.eu-west-1.amazonaws.com/Prod/
+            </div>
+
+            <h2>Data Models</h2>
+            
+            <h3>EventStatus (Enum)</h3>
+            <p>Valid event status values:</p>
+            <ul>
+                <li><code>draft</code> - Event is in draft state</li>
+                <li><code>published</code> - Event is published and visible</li>
+                <li><code>active</code> - Event is currently active</li>
+                <li><code>cancelled</code> - Event has been cancelled</li>
+                <li><code>completed</code> - Event has been completed</li>
+            </ul>
+
+            <h3>Event Model</h3>
+            <p>Model for creating new events.</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Constraints</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>eventId</td>
+                        <td>string</td>
+                        <td>No</td>
+                        <td>-</td>
+                        <td>Unique identifier (auto-generated if not provided)</td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td>string</td>
+                        <td>Yes</td>
+                        <td>1-200 chars</td>
+                        <td>Event title</td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td>string</td>
+                        <td>Yes</td>
+                        <td>1-2000 chars</td>
+                        <td>Event description</td>
+                    </tr>
+                    <tr>
+                        <td>date</td>
+                        <td>string</td>
+                        <td>Yes</td>
+                        <td>ISO format (YYYY-MM-DD)</td>
+                        <td>Event date</td>
+                    </tr>
+                    <tr>
+                        <td>location</td>
+                        <td>string</td>
+                        <td>Yes</td>
+                        <td>1-500 chars</td>
+                        <td>Event location</td>
+                    </tr>
+                    <tr>
+                        <td>capacity</td>
+                        <td>integer</td>
+                        <td>Yes</td>
+                        <td>1-100000</td>
+                        <td>Maximum attendees</td>
+                    </tr>
+                    <tr>
+                        <td>organizer</td>
+                        <td>string</td>
+                        <td>Yes</td>
+                        <td>1-200 chars</td>
+                        <td>Event organizer name</td>
+                    </tr>
+                    <tr>
+                        <td>status</td>
+                        <td>EventStatus</td>
+                        <td>Yes</td>
+                        <td>See enum values</td>
+                        <td>Event status</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Example:</h4>
+            <pre><code>{
+  "eventId": "tech-conf-2025",
+  "title": "Tech Conference 2025",
+  "description": "Annual technology conference",
+  "date": "2025-06-15",
+  "location": "San Francisco, CA",
+  "capacity": 500,
+  "organizer": "Tech Corp",
+  "status": "published"
+}</code></pre>
+
+            <h2>API Endpoints</h2>
+
+            <div class="endpoint">
+                <h3><span class="method get">GET</span> /</h3>
+                <p>Get API information.</p>
+                <h4>Response:</h4>
+                <pre><code>{ "message": "Events API" }</code></pre>
+                <h4>Status Codes:</h4>
+                <span class="status-code status-200">200</span> Success
+            </div>
+
+            <div class="endpoint">
+                <h3><span class="method post">POST</span> /events</h3>
+                <p>Create a new event.</p>
+                <h4>Request Body:</h4>
+                <p>Event object (see Event model above)</p>
+                <h4>Response:</h4>
+                <p>Created event with eventId</p>
+                <h4>Status Codes:</h4>
+                <span class="status-code status-201">201</span> Event created successfully<br>
+                <span class="status-code status-400">400</span> Validation error<br>
+                <span class="status-code status-503">503</span> DynamoDB table not found<br>
+                <span class="status-code status-500">500</span> Internal server error
+                <h4>Example:</h4>
+                <pre><code>curl -X POST https://xbcqj9xw6e.execute-api.eu-west-1.amazonaws.com/Prod/events \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Tech Conference 2025",
+    "description": "Annual technology conference",
+    "date": "2025-06-15",
+    "location": "San Francisco, CA",
+    "capacity": 500,
+    "organizer": "Tech Corp",
+    "status": "published"
+  }'</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <h3><span class="method get">GET</span> /events</h3>
+                <p>List all events with optional filtering.</p>
+                <h4>Query Parameters:</h4>
+                <ul>
+                    <li><code>status</code> (optional) - Filter by event status (case-insensitive)</li>
+                    <li><code>location</code> (optional) - Filter by location (partial match, case-insensitive)</li>
+                    <li><code>organizer</code> (optional) - Filter by organizer (partial match, case-insensitive)</li>
+                </ul>
+                <h4>Response:</h4>
+                <pre><code>{
+  "events": [...],
+  "count": 1
+}</code></pre>
+                <h4>Status Codes:</h4>
+                <span class="status-code status-200">200</span> Success<br>
+                <span class="status-code status-503">503</span> DynamoDB table not found<br>
+                <span class="status-code status-500">500</span> Internal server error
+                <h4>Examples:</h4>
+                <pre><code># List all events
+curl https://xbcqj9xw6e.execute-api.eu-west-1.amazonaws.com/Prod/events
+
+# Filter by status
+curl "https://xbcqj9xw6e.execute-api.eu-west-1.amazonaws.com/Prod/events?status=published"
+
+# Multiple filters
+curl "https://xbcqj9xw6e.execute-api.eu-west-1.amazonaws.com/Prod/events?status=published&location=San Francisco"</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <h3><span class="method get">GET</span> /events/{event_id}</h3>
+                <p>Get a specific event by ID.</p>
+                <h4>Path Parameters:</h4>
+                <ul>
+                    <li><code>event_id</code> (required) - Unique event identifier</li>
+                </ul>
+                <h4>Response:</h4>
+                <p>Event object</p>
+                <h4>Status Codes:</h4>
+                <span class="status-code status-200">200</span> Success<br>
+                <span class="status-code status-400">400</span> Invalid event ID<br>
+                <span class="status-code status-404">404</span> Event not found<br>
+                <span class="status-code status-503">503</span> DynamoDB table not found<br>
+                <span class="status-code status-500">500</span> Internal server error
+                <h4>Example:</h4>
+                <pre><code>curl https://xbcqj9xw6e.execute-api.eu-west-1.amazonaws.com/Prod/events/tech-conf-2025</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <h3><span class="method put">PUT</span> /events/{event_id}</h3>
+                <p>Update an existing event.</p>
+                <h4>Path Parameters:</h4>
+                <ul>
+                    <li><code>event_id</code> (required) - Unique event identifier</li>
+                </ul>
+                <h4>Request Body:</h4>
+                <p>EventUpdate object (all fields optional)</p>
+                <h4>Response:</h4>
+                <p>Updated event object</p>
+                <h4>Status Codes:</h4>
+                <span class="status-code status-200">200</span> Event updated successfully<br>
+                <span class="status-code status-400">400</span> Invalid event ID or no fields to update<br>
+                <span class="status-code status-404">404</span> Event not found<br>
+                <span class="status-code status-503">503</span> DynamoDB table not found<br>
+                <span class="status-code status-500">500</span> Internal server error
+                <h4>Example:</h4>
+                <pre><code>curl -X PUT https://xbcqj9xw6e.execute-api.eu-west-1.amazonaws.com/Prod/events/tech-conf-2025 \
+  -H "Content-Type: application/json" \
+  -d '{ "capacity": 600, "status": "active" }'</code></pre>
+            </div>
+
+            <div class="endpoint">
+                <h3><span class="method delete">DELETE</span> /events/{event_id}</h3>
+                <p>Delete an event.</p>
+                <h4>Path Parameters:</h4>
+                <ul>
+                    <li><code>event_id</code> (required) - Unique event identifier</li>
+                </ul>
+                <h4>Response:</h4>
+                <pre><code>{
+  "message": "Event deleted successfully",
+  "eventId": "tech-conf-2025"
+}</code></pre>
+                <h4>Status Codes:</h4>
+                <span class="status-code status-200">200</span> Event deleted successfully<br>
+                <span class="status-code status-400">400</span> Invalid event ID<br>
+                <span class="status-code status-404">404</span> Event not found<br>
+                <span class="status-code status-503">503</span> DynamoDB table not found<br>
+                <span class="status-code status-500">500</span> Internal server error
+                <h4>Example:</h4>
+                <pre><code>curl -X DELETE https://xbcqj9xw6e.execute-api.eu-west-1.amazonaws.com/Prod/events/tech-conf-2025</code></pre>
+            </div>
+
+            <h2>Error Responses</h2>
+            <p>All error responses follow this format:</p>
+            <pre><code>{ "detail": "Error message describing what went wrong" }</code></pre>
+
+            <h2>CORS Configuration</h2>
+            <p>The API supports CORS and accepts requests from all origins by default. This can be configured via the <code>CORS_ORIGINS</code> environment variable.</p>
+
+            <h2>Rate Limiting</h2>
+            <p>The API is deployed on AWS Lambda with API Gateway, which has default throttling limits:</p>
+            <ul>
+                <li>10,000 requests per second</li>
+                <li>5,000 concurrent executions</li>
+            </ul>
+
+            <div class="note">
+                <strong>Note:</strong> For interactive API documentation, FastAPI provides built-in Swagger UI at <code>/docs</code> and ReDoc at <code>/redoc</code> when running locally.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
