@@ -1,0 +1,42 @@
+{
+  "mcpServers": {
+    "awslabs.aws-api-mcp-server": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-api-mcp-server@latest"
+      ],
+      "disabled": false,
+      "autoApprove": []
+    },
+    "knowledge-mcp.global.api.aws": {
+      "command": "uvx",
+      "args": [
+        "knowledge-mcp.global.api.aws@latest"
+      ],
+      "disabled": false,
+      "autoApprove": []
+    },
+    "awslabs.frontend-mcp-server": {
+      "command": "uvx",
+      "args": [
+        "awslabs.frontend-mcp-server@latest"
+      ],
+      "disabled": false,
+      "autoApprove": []
+    }
+  },
+  "powers": {
+    "mcpServers": {
+      "power-strands-strands-agents": {
+        "command": "uvx",
+        "args": [
+          "strands-agents-mcp-server"
+        ],
+        "env": {
+          "FASTMCP_LOG_LEVEL": "INFO"
+        },
+        "disabled": false
+      }
+    }
+  }
+}

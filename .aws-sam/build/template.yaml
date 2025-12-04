@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Events API - Serverless FastAPI
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+Resources:
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: events
+      AttributeDefinitions:
+      - AttributeName: eventId
+        AttributeType: S
+      KeySchema:
+      - AttributeName: eventId
+        KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+  EventsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: EventsFunction
+      Handler: lambda_handler.handler
+      Environment:
+        Variables:
+          DYNAMODB_TABLE:
+            Ref: EventsTable
+          CORS_ORIGINS: '*'
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: EventsTable
+      Events:
+        ApiRoot:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+        ApiProxy:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+    Metadata:
+      SamResourceId: EventsFunction
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/
+  EventsTableName:
+    Description: DynamoDB table name
+    Value:
+      Ref: EventsTable
